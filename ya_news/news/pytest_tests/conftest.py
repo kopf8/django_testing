@@ -1,12 +1,12 @@
-import pytest
 from datetime import datetime, timedelta
-from django.utils import timezone
+
+import pytest
 from django.conf import settings
-from django.urls import reverse
-
 from django.test.client import Client
+from django.urls import reverse
+from django.utils import timezone
 
-from news.models import News, Comment
+from news.models import Comment, News
 
 
 @pytest.fixture
@@ -35,11 +35,10 @@ def not_author_client(not_author):
 
 @pytest.fixture
 def news():
-    news = News.objects.create(
+    return News.objects.create(
         title='Заголовок',
         text='Текст',
     )
-    return news
 
 
 @pytest.fixture
@@ -49,12 +48,11 @@ def pk_news(news):
 
 @pytest.fixture
 def comment(author, news):
-    comment = Comment.objects.create(
+    return Comment.objects.create(
         news=news,
         author=author,
         text='Текст',
     )
-    return comment
 
 
 @pytest.fixture
