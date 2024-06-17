@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
-
 from notes.forms import NoteForm
 from notes.models import Note
 
@@ -15,10 +14,12 @@ class TestContent(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-
         cls.author = User.objects.create(username='Автор1')
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.author)
         cls.other_user = User.objects.create(username='Автор2')
-
+        cls.other_user_client = Client()
+        cls.other_user_client.force_login(cls.other_user)
         cls.notes = [
             Note(
                 author=cls.author,
@@ -29,7 +30,6 @@ class TestContent(TestCase):
             for index in range(NOTES_COUNT)
         ]
         Note.objects.bulk_create(cls.notes)
-
         cls.notes = list(Note.objects.filter(author=cls.author))
         cls.other_note = Note.objects.create(
             author=cls.other_user,
@@ -39,56 +39,35 @@ class TestContent(TestCase):
         )
 
     def test_note_in_object_list(self):
-
-        self.client.force_login(self.author)
-        response = self.client.get(NOTES_LIST)
+        response = self.author_client.get(NOTES_LIST)
         object_list = response.context['object_list']
-
         self.assertIn(self.notes[0], object_list)
 
     def test_other_user_notes_not_in_list(self):
-
-        self.client.force_login(self.author)
-        response = self.client.get(NOTES_LIST)
+        response = self.author_client.get(NOTES_LIST)
         object_list = response.context['object_list']
-
         self.assertNotIn(self.other_note, object_list)
 
     def test_note_add_page_contains_form(self):
-
-        self.client.force_login(self.author)
         add_url = reverse('notes:add')
-        response = self.client.get(add_url)
-
+        response = self.author_client.get(add_url)
         self.assertIn('form', response.context)
         self.assertIsInstance(response.context['form'], NoteForm)
 
     def test_note_edit_page_contains_form(self):
-
-        self.client.force_login(self.author)
         edit_url = reverse('notes:edit', args=(self.notes[0].slug,))
-        response = self.client.get(edit_url)
-
+        response = self.author_client.get(edit_url)
         self.assertIn('form', response.context)
         self.assertIsInstance(response.context['form'], NoteForm)
 
     def test_notes_count(self):
-
-        self.client.force_login(self.author)
-
-        response = self.client.get(NOTES_LIST)
+        response = self.author_client.get(NOTES_LIST)
         notes_count = response.context['object_list'].count()
-
         self.assertEqual(notes_count, NOTES_COUNT)
 
     def test_notes_order(self):
-
-        self.client.force_login(self.author)
-
-        response = self.client.get(NOTES_LIST)
+        response = self.author_client.get(NOTES_LIST)
         object_list = response.context['object_list']
-
         all_notes = [note.id for note in object_list]
         sorted_dates = sorted(all_notes)
-
         self.assertEqual(all_notes, sorted_dates)

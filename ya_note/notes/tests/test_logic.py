@@ -3,7 +3,6 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
-
 from notes.forms import WARNING
 from notes.models import Note
 
@@ -75,11 +74,11 @@ class TestNoteCreation(TestCase):
             title=self.NOTE['title']).exists())
 
 
-class TestCommentEditDelete(TestCase):
+class TestNoteEditDelete(TestCase):
 
     TITLE = 'Новая заметка'
-    COMMENT_TEXT = 'Текст комментария'
-    NEW_COMMENT_TEXT = 'Обновлённый комментарий'
+    NOTE_TEXT = 'Текст заметки'
+    NEW_NOTE_TEXT = 'Обновлённый текст'
 
     @classmethod
     def setUpTestData(cls):
@@ -94,7 +93,7 @@ class TestCommentEditDelete(TestCase):
 
         cls.note = Note.objects.create(
             title=cls.TITLE,
-            text=cls.COMMENT_TEXT,
+            text=cls.NOTE_TEXT,
             slug='new_note',
             author=cls.author
         )
@@ -105,7 +104,7 @@ class TestCommentEditDelete(TestCase):
 
         cls.form_data = {
             'title': cls.TITLE,
-            'text': cls.NEW_COMMENT_TEXT}
+            'text': cls.NEW_NOTE_TEXT}
 
     def test_author_can_delete_note(self):
 
@@ -133,7 +132,7 @@ class TestCommentEditDelete(TestCase):
         self.assertRedirects(response, self.success_url)
 
         self.note.refresh_from_db()
-        self.assertEqual(self.note.text, self.NEW_COMMENT_TEXT)
+        self.assertEqual(self.note.text, self.NEW_NOTE_TEXT)
 
     def test_user_cant_edit_note_of_another_user(self):
 
@@ -142,4 +141,4 @@ class TestCommentEditDelete(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
         self.note.refresh_from_db()
-        self.assertEqual(self.note.text, self.COMMENT_TEXT)
+        self.assertEqual(self.note.text, self.NOTE_TEXT)

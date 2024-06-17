@@ -5,7 +5,6 @@ from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
 from django.utils import timezone
-
 from news.models import Comment, News
 
 
@@ -15,7 +14,7 @@ def author(django_user_model):
 
 
 @pytest.fixture
-def not_author(django_user_model):
+def reader(django_user_model):
     return django_user_model.objects.create(username='Не автор')
 
 
@@ -27,9 +26,9 @@ def author_client(author):
 
 
 @pytest.fixture
-def not_author_client(not_author):
+def reader_client(reader):
     client = Client()
-    client.force_login(not_author)
+    client.force_login(reader)
     return client
 
 

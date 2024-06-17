@@ -1,6 +1,7 @@
+from http import HTTPStatus
+
 import pytest
 from django.conf import settings
-
 from news.forms import CommentForm
 
 
@@ -15,10 +16,10 @@ def test_news_count(client, many_news, home_url):
 @pytest.mark.django_db
 def test_news_order(client, many_news, home_url, news):
     response = client.get(home_url)
-    object_list = response.context['object_list']
-    all_dates = [news.date for news in object_list]
-    sorted_dates = sorted(all_dates, reverse=True)
-    assert all_dates == sorted_dates
+    assert response.status_code == HTTPStatus.OK
+    object_list = list(response.context['object_list'])
+    sorted_list = sorted(object_list, key=lambda x: x.date, reverse=True)
+    assert object_list == sorted_list
 
 
 @pytest.mark.django_db
