@@ -25,7 +25,7 @@ def test_availability_for_anonymous_user(client, name, args):
 @pytest.mark.parametrize(
     'client, status',
     (
-        (pytest.lazy_fixture('not_author_client'), HTTPStatus.NOT_FOUND),
+        (pytest.lazy_fixture('reader_client'), HTTPStatus.NOT_FOUND),
         (pytest.lazy_fixture('author_client'), HTTPStatus.OK)
     ),
 )
