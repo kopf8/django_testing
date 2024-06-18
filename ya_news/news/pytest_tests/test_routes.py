@@ -7,7 +7,7 @@ from pytest_django.asserts import assertRedirects
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'name, args',
+    ('name, args'),
     (
         ('news:home', None),
         ('news:detail', pytest.lazy_fixture('pk_news')),

@@ -19,6 +19,11 @@ def reader(django_user_model):
 
 
 @pytest.fixture
+def anon():
+    return Client()
+
+
+@pytest.fixture
 def author_client(author):
     client = Client()
     client.force_login(author)
