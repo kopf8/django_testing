@@ -10,7 +10,9 @@ from pytest_django.asserts import assertFormError, assertRedirects
 
 @pytest.mark.django_db
 def test_anonymous_user_cant_create_comment(
-        client, detail_news_url, form_data
+    client,
+    detail_news_url,
+    form_data
 ):
     response = client.post(detail_news_url, data=form_data)
     login_url = reverse('users:login')
@@ -72,7 +74,8 @@ def test_author_can_delete_comment(
     )
 )
 def test_deleting_comment_of_another_user(
-    client_type, status,
+    client_type,
+    status,
     delete_comment_url
 ):
     response = client_type.delete(delete_comment_url)
@@ -82,7 +85,11 @@ def test_deleting_comment_of_another_user(
 
 
 def test_author_can_edit_comment(
-    author_client, form_data, comment, edit_comment_url, detail_news_url
+    author_client,
+    form_data,
+    comment,
+    edit_comment_url,
+    detail_news_url
 ):
     response = author_client.post(edit_comment_url, data=form_data)
     assertRedirects(response, f'{detail_news_url}#comments')
@@ -90,19 +97,21 @@ def test_author_can_edit_comment(
     assert comment.text == 'Новый текст'
 
 
-def test_user_cant_edit_comment_of_another_user(
-    reader_client, form_data, comment, edit_comment_url
+@pytest.mark.parametrize(
+    'client_type, status',
+    (
+        (pytest.lazy_fixture('reader_client'), HTTPStatus.NOT_FOUND),
+        (pytest.lazy_fixture('anon'), HTTPStatus.FOUND)
+    )
+)
+def test_editing_comment_of_another_user(
+    client_type,
+    status,
+    form_data,
+    comment,
+    edit_comment_url
 ):
-    response = reader_client.post(edit_comment_url, data=form_data)
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    comment.refresh_from_db()
-    assert comment.text == 'Текст'
-
-
-def anonymous_user_cant_edit_comment(
-    client, form_data, comment, edit_comment_url
-):
-    response = client.post(edit_comment_url, data=form_data)
-    assert response.status_code == HTTPStatus.NOT_FOUND
+    response = client_type.post(edit_comment_url, data=form_data)
+    assert response.status_code == status
     comment.refresh_from_db()
     assert comment.text == 'Текст'
